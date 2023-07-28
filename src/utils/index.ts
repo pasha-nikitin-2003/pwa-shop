@@ -1,0 +1,1 @@
+export { formatWordByNumber } from './formatByNumbers'

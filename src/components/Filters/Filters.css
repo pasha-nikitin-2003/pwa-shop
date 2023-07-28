@@ -1,0 +1,37 @@
+.Filters {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0 auto;
+  height: 260px;
+  background: inherit;
+}
+
+.Filters_prices {
+  display: flex;
+  max-width: 100%;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 12px 4px 0px 4px;
+}
+
+.Filters_prices_boundary {
+  user-select: none;
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 20px;
+}
+
+@media (min-width: 768px) {
+  .Filters {
+    margin-top: 16px;
+    padding: 6px 0px;
+    position: sticky;
+    width: 100%;
+    height: max-content;
+    top: 12px;
+    max-width: var(--sidebar-width);
+    border-radius: 12px;
+    background: var(--vkui--color_background_content);
+  }
+}
