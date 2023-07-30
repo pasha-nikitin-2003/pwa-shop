@@ -27,6 +27,7 @@
     "src",
     "setupTest.js",
     "src/api/user/addToCart.ts",
-    "src/.react-app-env.d.ts",
+    "src/.react-app-env.d.ts"
   ],
+  "exclude": ["src/service-worker/*"]
 }

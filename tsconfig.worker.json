@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["esnext", "WebWorker"],
+    "noEmit": false,
+    "strict": false,
+    "isolatedModules": false,
+    "outDir": "./public"
+  },
+  "files": ["./src/service-worker/service-worker.ts"]
+}

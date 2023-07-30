@@ -39,3 +39,7 @@ ReactDOM.render(
   /** Рендерим все компоненты в div c id === 'root' в public/index.html */
   document.getElementById('root')
 )
+
+navigator.serviceWorker.register('/service-worker.js', {
+  scope: '/',
+})
