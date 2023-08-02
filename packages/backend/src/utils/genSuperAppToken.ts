@@ -1,65 +1,55 @@
-import crypto from "crypto"
-const sha = require("js-sha256");
-const IV_LENGTH = 16; // For AES, this is always 16
+import crypto from 'crypto'
 
-const payload = {
-  access_token: "",
-  iat: Date.now() / 1000,
-  exp: Date.now() / 1000 + 60 * 60,
-};
+const IV_LENGTH = 16 // For AES, this is always 16
 
-const serviceKey =
-  "65e43d1965e43d1965e43d190466f11494665e465e43d19012345f838b4e2d67130f219"; // Сервисный ключ приложения (можно получить в настройках приложения VK)
+/** AES-CBC-256 шифрование */
+function encrypt(text: string, key: string | Buffer) {
+  const [encryptKey, signKey] = prepareKeys(key)
 
-async function sha256(message: string) {
-  // encode as UTF-8
-  const msgBuffer = new TextEncoder().encode(message);
+  let iv = crypto.randomBytes(IV_LENGTH)
+  let cipher = crypto.createCipheriv('aes-256-cbc', encryptKey, iv)
+  let encrypted = cipher.update(text)
 
-  // hash the message
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+  encrypted = Buffer.concat([encrypted, cipher.final()])
+  encrypted = Buffer.concat([iv, encrypted])
+  let signature = hmac(encrypted, signKey)
 
-  // convert ArrayBuffer to Array
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-
-  // convert bytes to hex string
-  const hashHex = hashArray
-    .map((b) => ("00" + b.toString(16)).slice(-2))
-    .join("");
-  return hashHex;
+  return Buffer.concat([signature, encrypted]).toString('base64')
 }
 
-function encrypt(text: string, key: string) {
-  const [encryptKey, signKey] = prepareKeys(key);
+/** Cоздание ключей */
+function prepareKeys(key: string | Buffer) {
+  const hash = crypto.createHash('sha256')
+  hash.update(key)
+  const hashed = hash.digest()
 
-  let iv = crypto.randomBytes(IV_LENGTH);
-  let cipher = crypto.createCipheriv("aes-256-cbc", encryptKey, iv);
-  let encrypted = cipher.update(text);
-
-  encrypted = Buffer.concat([encrypted, cipher.final()]);
-  encrypted = Buffer.concat([iv, encrypted]);
-  let signature = hmac(encrypted, signKey);
-
-  return Buffer.concat([signature, encrypted]).toString("base64");
+  return [hashed.slice(0, 32), hashed.slice(32)]
 }
 
-function prepareKeys(key: string) {
-  const hash = crypto.createHash("sha256");
-  hash.update(key);
-  const hashed = hash.digest();
-
-  return [hashed.slice(0, 32), hashed.slice(32)];
+function hmac(data: Buffer | string, key: Buffer | string) {
+  return crypto.createHmac('sha256', key).update(data).digest()
 }
 
-function hmac(data: Buffer, key: Buffer) {
-  return crypto.createHmac("sha256", key).update(data).digest();
-}
-
+/** Создание токена */
 export async function genSuperAppToken(accessToken: string) {
-  const key = await sha256(serviceKey); // Строка/buffer длинной 32 байта
-  payload.access_token = accessToken
-  const [iv, ciphertext] = encrypt(JSON.stringify(payload), key); // AES-CBC-256 шифрование
-  const signature = sha.hmac(iv + ciphertext, key);
-  const superAppToken = btoa(signature + iv + ciphertext);
+  const payload = {
+    access_token: accessToken,
+    iat: Date.now() / 1000,
+    exp: Date.now() / 1000 + 60 * 60,
+  }
+  const serviceKey = process.env.SERVICE_TOKEN as string
 
-  return superAppToken;
+  const key = crypto
+    .createHash('sha256')
+    .update(serviceKey)
+    .digest()
+    .slice(0, 32) // Строка/buffer длинной 32 байта
+
+  const [iv, ciphertext] = encrypt(JSON.stringify(payload), key)
+  const signature = [...hmac(iv + ciphertext, key)]
+    .map((x) => x.toString(16).padStart(2, '0'))
+    .join('')
+  const superAppToken = btoa(signature + iv + ciphertext)
+
+  return superAppToken
 }
