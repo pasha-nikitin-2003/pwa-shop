@@ -1,8 +1,8 @@
 import { Router } from 'express'
-import { generateSuperAppToken } from './generateSuperAppToken'
+import { getSuperAppToken } from './getSuperAppToken'
 
 const router = Router()
 
-router.route('/generate-superapp-token').post(generateSuperAppToken)
+router.route('/get-superapp-token').post(getSuperAppToken)
 
 export default router

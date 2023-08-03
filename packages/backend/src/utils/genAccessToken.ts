@@ -9,5 +9,7 @@ export async function genAccessToken(silentToken: string, uuid: string) {
     url: `${ACCESS_GEN_URL}?v=5.131&token=${silentToken}&access_token=${process.env.SERVICE_TOKEN}&uuid=${uuid}`,
   })
 
-  return res.data.response.access_token as string
+  if (res.data.response?.access_token)
+    return res.data.response.access_token 
+  else return "error"
 }

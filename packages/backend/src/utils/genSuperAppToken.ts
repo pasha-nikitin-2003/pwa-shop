@@ -4,7 +4,8 @@ const IV_LENGTH = 16 // For AES, this is always 16
 
 /** AES-CBC-256 шифрование */
 function encrypt(text: string, key: string | Buffer) {
-  const [encryptKey, signKey] = prepareKeys(key)
+  let [encryptKey, signKey] = prepareKeys(key)
+  signKey = encryptKey
 
   let iv = crypto.randomBytes(IV_LENGTH)
   let cipher = crypto.createCipheriv('aes-256-cbc', encryptKey, iv)
@@ -26,6 +27,7 @@ function prepareKeys(key: string | Buffer) {
   return [hashed.slice(0, 32), hashed.slice(32)]
 }
 
+/** Создание подписанного сообщения */
 function hmac(data: Buffer | string, key: Buffer | string) {
   return crypto.createHmac('sha256', key).update(data).digest()
 }
@@ -35,21 +37,9 @@ export async function genSuperAppToken(accessToken: string) {
   const payload = {
     access_token: accessToken,
     iat: Date.now() / 1000,
-    exp: Date.now() / 1000 + 60 * 60,
+    exp: Date.now() / 1000 + 60 * 60
   }
   const serviceKey = process.env.SERVICE_TOKEN as string
 
-  const key = crypto
-    .createHash('sha256')
-    .update(serviceKey)
-    .digest()
-    .slice(0, 32) // Строка/buffer длинной 32 байта
-
-  const [iv, ciphertext] = encrypt(JSON.stringify(payload), key)
-  const signature = [...hmac(iv + ciphertext, key)]
-    .map((x) => x.toString(16).padStart(2, '0'))
-    .join('')
-  const superAppToken = btoa(signature + iv + ciphertext)
-
-  return superAppToken
+  return encrypt(JSON.stringify(payload), serviceKey)
 }
