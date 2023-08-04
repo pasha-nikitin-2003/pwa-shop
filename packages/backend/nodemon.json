@@ -1,7 +1,0 @@
-{
-  "watch": ["src"],
-  "ignore": ["node_modules"],
-  "ext": "ts,mjs,js,json,graphql",
-  "exec": "tsc && node -r dotenv/config ./build/index.js",
-  "legacyWatch": true
-}

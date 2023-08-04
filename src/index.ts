@@ -1,9 +1,9 @@
 import { Config, Connect, ConnectEvents, MiniApp } from '@vkontakte/superappkit'
 
-const SERVER_DEV_URL = 'http://localhost:4000'
+const SERVER_DEV_URL = 'https://pwa-shop-backend.vercel.app'
 const isLogin = window.location.href.includes('successLogin')
 
-// Регистрация service-worker
+// Регистрация service-workernpm 
 navigator.serviceWorker.register('/service-worker.js', {
   scope: '/',
 })
